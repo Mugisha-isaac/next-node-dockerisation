@@ -19,10 +19,26 @@ const pgClient = new Pool({
 
 pgClient.on("connect",(client)=>{
     client.query("CREATE TABLE IF NOT EXISTS values(number INT)")
-    .catch(err=>console.log(err))
+    .catch(err=>console.log("PG ERROR: ",err))
 })
 
 
-// app.get('/',(req,res)=>{
+app.get('/',(req,res)=>{
+   res.send('welcome to nodejs application')
+})
 
-// })
+app.get('/values/all',async(req,res)=>{
+   const values = await pgClient.query("SELECT * FROM values");
+   res.send(values)
+})
+
+app.post('/values',(req,res)=>{
+    if(!req.body.value) return res.send({working:false});
+
+    pgClient.query("INSERT INTO values(number) VALUES($1)", [req.body.value])
+    return res.send({working:true})
+})
+
+app.listen(5000,(err)=>{
+    console.log('server is up..........')
+})
